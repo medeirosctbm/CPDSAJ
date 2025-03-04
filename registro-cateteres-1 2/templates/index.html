@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Cateteres</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .links {
+            margin-top: 20px;
+        }
+        .links a {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 8px 12px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Registro de Cateteres</h1>
+
+    <form id="form-cateter">
+        <div class="form-group">
+            <label for="paciente">Nome do Paciente:</label>
+            <input type="text" id="paciente" required>
+        </div>
+
+        <div class="form-group">
+            <label for="hospital">Hospital:</label>
+            <select id="hospital" required>
+                <option value="">Selecione o hospital</option>
+                <option value="HMSJ">HMSJ</option>
+                <option value="HRHDS">HRHDS</option>
+                <option value="HJAF">HJAF</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="leito">Leito:</label>
+            <input type="text" id="leito">
+        </div>
+
+        <div class="form-group">
+            <label for="residente">Residente:</label>
+            <input type="text" id="residente" required>
+        </div>
+
+        <div class="form-group">
+            <label for="staff">Staff:</label>
+            <input type="text" id="staff" required>
+        </div>
+
+        <div class="form-group">
+            <label for="cirurgia">Cirurgia realizada:</label>
+            <input type="text" id="cirurgia" required>
+        </div>
+
+        <div class="form-group">
+            <label for="doseInicial">Dose inicial:</label>
+            <input type="text" id="doseInicial" required>
+        </div>
+
+        <div class="form-group">
+            <label for="dataInstalacao">Data de Instalação:</label>
+            <input type="date" id="dataInstalacao" required>
+        </div>
+
+        <div class="form-group">
+            <label for="tipo">Tipo de Cateter:</label>
+            <select id="tipo" required>
+                <option value="">Selecione o tipo</option>
+                <option value="CPD">CPD</option>
+                <option value="PCA">PCA</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="alturaGroup">
+            <label for="altura">Altura:</label>
+            <input type="number" id="altura" min="0" max="300">
+        </div>
+
+        <button type="submit">Registrar Cateter</button>
+    </form>
+
+    <div class="links">
+        <a href="/visualizar">Visualizar Cateteres Registrados</a>
+    </div>
+
+    <script>
+        // Define a data atual no campo de data de instalação
+        const dataAtual = new Date().toISOString().split('T')[0];
+        document.getElementById('dataInstalacao').value = dataAtual;
+        
+        // Inicialmente esconde o campo de altura
+        document.getElementById('alturaGroup').classList.add('hidden');
+
+        // Mostra/esconde o campo de altura com base no tipo de cateter
+        document.getElementById('tipo').addEventListener('change', function() {
+            const alturaGroup = document.getElementById('alturaGroup');
+            if (this.value === 'CPD') {
+                alturaGroup.classList.remove('hidden');
+                document.getElementById('altura').required = true;
+            } else {
+                alturaGroup.classList.add('hidden');
+                document.getElementById('altura').required = false;
+            }
+        });
+
+        document.getElementById('form-cateter').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const tipo = document.getElementById('tipo').value;
+            const cateter = {
+                paciente: document.getElementById('paciente').value,
+                hospital: document.getElementById('hospital').value,
+                leito: document.getElementById('leito').value,
+                residente: document.getElementById('residente').value,
+                staff: document.getElementById('staff').value,
+                cirurgia: document.getElementById('cirurgia').value,
+                doseInicial: document.getElementById('doseInicial').value,
+                dataInstalacao: document.getElementById('dataInstalacao').value,
+                tipo: tipo,
+                dataRegistro: new Date().toISOString()
+            };
+
+            // Adiciona altura apenas se for CPD
+            if (tipo === 'CPD') {
+                cateter.altura = document.getElementById('altura').value;
+            }
+
+            try {
+                const resposta = await fetch('/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cateter)
+                });
+
+                const resultado = await resposta.json();
+                alert(resultado.mensagem);
+
+                // Limpa o formulário
+                document.getElementById('form-cateter').reset();
+                document.getElementById('alturaGroup').classList.add('hidden');
+            } catch (erro) {
+                console.error('Erro:', erro);
+                alert('Erro ao registrar o cateter.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cateteres Registrados</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .nav-links a {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: #2980b9;
+        }
+        .filter-container {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .filter-container select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 200px;
+        }
+        .filter-container button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .filter-container button:hover {
+            background-color: #2980b9;
+        }
+        .cateter-card {
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .cateter-header {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cateter-header:hover {
+            background-color: #2980b9;
+        }
+        .cateter-content {
+            display: none;
+            padding: 20px;
+        }
+        .cateter-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+        .repiques-section {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .repique-item {
+            background-color: #f5f9ff;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        button.repique {
+            background-color: #27ae60;
+            color: white;
+        }
+        button.repique:hover {
+            background-color: #219653;
+        }
+        button.retirar {
+            background-color: #e74c3c;
+            color: white;
+        }
+        button.retirar:hover {
+            background-color: #c0392b;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .voltar {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .voltar:hover {
+            background-color: #2980b9;
+        }
+        .no-cateteres {
+            text-align: center;
+            padding: 50px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Cateteres Registrados</h1>
+
+    <div class="nav-links">
+        <a href="/">Novo Cateter</a>
+        <a href="/visualizar">Cateteres Ativos</a>
+        <a href="/visualizar/retirados">Cateteres Retirados</a>
+    </div>
+
+    <div class="filter-container">
+        <label for="hospital-filter">Filtrar por Hospital:</label>
+        <select id="hospital-filter">
+            <option value="">Todos os Hospitais</option>
+            <option value="HMSJ">HMSJ</option>
+            <option value="HRHDS">HRHDS</option>
+            <option value="HJAF">HJAF</option>
+        </select>
+        <button onclick="filtrarHospital()">Filtrar</button>
+    </div>
+
+    <div id="cateteres-container">
+        <!-- Dados serão inseridos aqui via JavaScript -->
+    </div>
+
+    <a href="/" class="voltar">Voltar</a>
+
+    <!-- Modal de Repique -->
+    <div id="modal-repique" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal('modal-repique')">&times;</span>
+            <h2>Registrar Repique</h2>
+            <p><span class="info-label">Paciente:</span> <span id="repique-paciente"></span></p>
+            <input type="hidden" id="repique-id">
+
+            <div class="form-group">
+                <label for="repique-data">Data do Repique:</label>
+                <input type="date" id="repique-data" required>
+            </div>
+
+            <div class="form-group">
+                <label for="repique-eva">EVA (Escala de Dor 0-10):</label>
+                <input type="number" id="repique-eva" min="0" max="10" required>
+            </div>
+
+            <div class="form-group">
+                <label for="repique-dose">Dose (mL):</label>
+                <input type="number" id="repique-dose" min="0" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="repique-observacoes">Observações:</label>
+                <textarea id="repique-observacoes" rows="3"></textarea>
+            </div>
+
+            <button class="repique" onclick="registrarRepique()">Registrar Repique</button>
+        </div>
+    </div>
+
+    <!-- Modal de Retirada -->
+    <div id="modal-retirada" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal('modal-retirada')">&times;</span>
+            <h2>Registrar Retirada de Cateter</h2>
+            <p><span class="info-label">Paciente:</span> <span id="retirada-paciente"></span></p>
+            <input type="hidden" id="retirada-id">
+
+            <div class="form-group">
+                <label for="retirada-data">Data da Retirada:</label>
+                <input type="date" id="retirada-data" required>
+            </div>
+
+
+
+            <div class="form-group">
+                <label for="retirada-observacoes">Observações:</label>
+                <textarea id="retirada-observacoes" rows="3"></textarea>
+            </div>
+
+            <button class="retirar" onclick="registrarRetirada()">Confirmar Retirada</button>
+        </div>
+    </div>
+
+    <script>
+        // Carregar cateteres
+        async function listarCateteres() {
+            const catetersContainer = document.getElementById('cateteres-container');
+            catetersContainer.innerHTML = '<div class="loading">Carregando...</div>';
+
+            try {
+                const resposta = await fetch('/listar', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const cateteres = await resposta.json();
+
+                if (cateteres.length === 0) {
+                    catetersContainer.innerHTML = '<div class="no-cateteres">Nenhum cateter encontrado.</div>';
+                    return;
+                }
+
+                catetersContainer.innerHTML = '';
+
+                cateteres.forEach(cateter => {
+                    if (!cateter.retirado) {
+                        const catetersCard = document.createElement('div');
+                        catetersCard.className = 'cateter-card';
+
+                        // Cabeçalho do card (clicável para expandir/colapsar)
+                        const header = document.createElement('div');
+                        header.className = 'cateter-header';
+                        header.innerHTML = `
+                            <div>
+                                <strong>${cateter.paciente}</strong> - ${cateter.hospital || 'Hospital não informado'} 
+                                (Leito: ${cateter.leito || 'N/A'})
+                            </div>
+                            <div>
+                                ${formatarData(cateter.dataInstalacao) || 'Data não informada'}
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                        `;
+                        header.onclick = function() {
+                            const content = this.nextElementSibling;
+                            const icon = this.querySelector('.toggle-icon');
+                            if (content.style.display === 'block') {
+                                content.style.display = 'none';
+                                icon.textContent = '▼';
+                            } else {
+                                content.style.display = 'block';
+                                icon.textContent = '▲';
+                            }
+                        };
+
+                        // Conteúdo do card (inicialmente colapsado)
+                        const content = document.createElement('div');
+                        content.className = 'cateter-content';
+
+                        // Informações do cateter
+                        let infoHTML = '<div class="cateter-info">';
+
+                        // Primeira coluna de informações
+                        infoHTML += `
+                            <div>
+                                <div class="info-item">
+                                    <div class="info-label">Paciente:</div>
+                                    <div>${cateter.paciente || 'Não informado'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Hospital:</div>
+                                    <div>${cateter.hospital || 'Não informado'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Leito:</div>
+                                    <div>${cateter.leito || 'Não informado'}</div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Segunda coluna de informações
+                        infoHTML += `
+                            <div>
+                                <div class="info-item">
+                                    <div class="info-label">Residente:</div>
+                                    <div>${cateter.residente || 'Não informado'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Staff:</div>
+                                    <div>${cateter.staff || 'Não informado'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Cirurgia:</div>
+                                    <div>${cateter.cirurgia || 'Não informado'}</div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Terceira coluna de informações
+                        infoHTML += `
+                            <div>
+                                <div class="info-item">
+                                    <div class="info-label">Tipo de Cateter:</div>
+                                    <div>${cateter.tipo || 'Não informado'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Altura:</div>
+                                    <div>${cateter.altura || 'Não informado'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Dose Inicial:</div>
+                                    <div>${cateter.doseInicial || 'Não informado'} mL</div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Quarta coluna de informações
+                        infoHTML += `
+                            <div>
+                                <div class="info-item">
+                                    <div class="info-label">Data de Instalação:</div>
+                                    <div>${formatarData(cateter.dataInstalacao) || 'Não informado'}</div>
+                                </div>
+                            </div>
+                        `;
+
+                        infoHTML += '</div>';
+
+                        // Seção de repiques
+                        infoHTML += '<div class="repiques-section">';
+                        infoHTML += '<h3>Histórico de Repiques</h3>';
+
+                        if (cateter.repiques && cateter.repiques.length > 0) {
+                            cateter.repiques.forEach(repique => {
+                                infoHTML += `
+                                    <div class="repique-item">
+                                        <div class="info-item">
+                                            <div class="info-label">Data:</div>
+                                            <div>${formatarData(repique.data) || 'Não informado'}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">EVA (Escala de Dor):</div>
+                                            <div>${repique.eva || 'Não informado'}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Dose:</div>
+                                            <div>${repique.dose || 'Não informado'}</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Dose:</div>
+                                            <div>${repique.dose || 'Não informado'} mL</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Observações:</div>
+                                            <div>${repique.observacoes || 'Sem observações'}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            infoHTML += '<p>Nenhum repique registrado.</p>';
+                        }
+
+                        infoHTML += '</div>';
+
+                        // Botões de ação
+                        infoHTML += `
+                            <div class="action-buttons">
+                                <button class="repique" onclick="abrirModalRepique('${cateter.id}', '${cateter.paciente}')">Registrar Repique</button>
+                                <button class="retirar" onclick="abrirModalRetirada('${cateter.id}', '${cateter.paciente}')">Retirar Cateter</button>
+                            </div>
+                        `;
+
+                        content.innerHTML = infoHTML;
+
+                        catetersCard.appendChild(header);
+                        catetersCard.appendChild(content);
+                        catetersContainer.appendChild(catetersCard);
+                    }
+                });
+
+            } catch (erro) {
+                console.error('Erro ao listar cateteres:', erro);
+                catetersContainer.innerHTML = '<div class="error">Erro ao carregar cateteres. Tente novamente mais tarde.</div>';
+            }
+        }
+
+        // Função para filtrar por hospital
+        function filtrarHospital() {
+            const hospital = document.getElementById('hospital-filter').value;
+            if (hospital) {
+                window.location.href = `/filtrar/${hospital}`;
+            } else {
+                window.location.href = '/visualizar';
+            }
+        }
+
+        // Função para abrir o modal de repique
+        function abrirModalRepique(id, paciente) {
+            document.getElementById('repique-id').value = id;
+            document.getElementById('repique-paciente').textContent = paciente;
+
+            // Definir data atual e limpar outros campos
+            const dataAtual = new Date().toISOString().split('T')[0];
+            document.getElementById('repique-data').value = dataAtual;
+            document.getElementById('repique-eva').value = '';
+            document.getElementById('repique-dose').value = '';
+            document.getElementById('repique-observacoes').value = '';
+
+            document.getElementById('modal-repique').style.display = 'block';
+        }
+
+        // Função para abrir o modal de retirada
+        function abrirModalRetirada(id, paciente) {
+            document.getElementById('retirada-id').value = id;
+            document.getElementById('retirada-paciente').textContent = paciente;
+
+            // Definir data atual e limpar outros campos
+            const dataAtual = new Date().toISOString().split('T')[0];
+            document.getElementById('retirada-data').value = dataAtual;
+            document.getElementById('retirada-observacoes').value = '';
+
+            document.getElementById('modal-retirada').style.display = 'block';
+        }
+
+        // Função para fechar os modais
+        function fecharModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Função para registrar um repique
+        async function registrarRepique() {
+            const id = document.getElementById('repique-id').value;
+            const repique = {
+                data: document.getElementById('repique-data').value,
+                eva: document.getElementById('repique-eva').value,
+                dose: document.getElementById('repique-dose').value,
+                observacoes: document.getElementById('repique-observacoes').value,
+                dataRegistro: new Date().toISOString()
+            };
+
+            try {
+                const resposta = await fetch(`/repique/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(repique)
+                });
+
+                const resultado = await resposta.json();
+                alert(resultado.mensagem);
+                fecharModal('modal-repique');
+                listarCateteres(); // Recarrega a lista
+            } catch (erro) {
+                console.error('Erro ao registrar repique:', erro);
+                alert('Erro ao registrar o repique.');
+            }
+        }
+
+        // Função para registrar a retirada do cateter
+        async function registrarRetirada() {
+            const id = document.getElementById('retirada-id').value;
+            const retirada = {
+                dataRetirada: document.getElementById('retirada-data').value,
+                motivoRetirada: "",
+                observacoesRetirada: document.getElementById('retirada-observacoes').value
+            };
+
+            try {
+                const resposta = await fetch(`/retirar/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(retirada)
+                });
+
+                const resultado = await resposta.json();
+                alert(resultado.mensagem);
+                fecharModal('modal-retirada');
+                listarCateteres(); // Recarrega a lista
+            } catch (erro) {
+                console.error('Erro ao retirar cateter:', erro);
+                alert('Erro ao retirar o cateter.');
+            }
+        }
+
+        // Função auxiliar para formatar data
+        function formatarData(dataString) {
+            if (!dataString) return null;
+
+            const data = new Date(dataString);
+            if (isNaN(data.getTime())) return dataString;
+
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        // Carregar cateteres ao iniciar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            listarCateteres();
+
+            // Fechar modal ao clicar fora dele
+            window.onclick = function(event) {
+                if (event.target.className === 'modal') {
+                    event.target.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

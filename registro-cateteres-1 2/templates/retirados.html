@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cateteres Retirados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .voltar {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .filter-container select {
+            width: 200px;
+            margin-right: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .filter-container button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 8px 12px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        /* Estilos para os cards colapsáveis */
+        .cateteres-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .cateter-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .cateter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .cateter-header:hover {
+            background-color: #e9ecef;
+        }
+        .cateter-content {
+            padding: 0 15px;
+            display: none;
+            background-color: white;
+        }
+        .cateter-info {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cateter-info > div {
+            flex: 1;
+            min-width: 250px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #555;
+        }
+        .toggle-icon {
+            margin-left: 10px;
+        }
+        .loading, .no-cateteres {
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cateteres Retirados</h1>
+    
+    <div class="nav-links">
+        <a href="/">Novo Cateter</a>
+        <a href="/visualizar">Cateteres Ativos</a>
+        <a href="/visualizar/retirados">Cateteres Retirados</a>
+    </div>
+    
+    <div class="filter-container">
+        <label for="hospital-filter">Filtrar por Hospital:</label>
+        <select id="hospital-filter">
+            <option value="">Todos os Hospitais</option>
+            <option value="HMSJ">HMSJ</option>
+            <option value="HRHDS">HRHDS</option>
+            <option value="HJAF">HJAF</option>
+        </select>
+        <button onclick="filtrarHospital()">Filtrar</button>
+    </div>
+    
+    <div id="cateteres-container" class="cateteres-container">
+        <!-- Os cateteres serão inseridos aqui via JavaScript -->
+    </div>
+    
+    <a href="/" class="voltar">Voltar</a>
+
+    <script>
+        // Função para formatar data
+        function formatarData(dataString) {
+            if (!dataString) return '-';
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR');
+        }
+        
+        // Função para buscar e exibir os cateteres retirados
+        async function listarCateteres() {
+            const catetersContainer = document.getElementById('cateteres-container');
+            catetersContainer.innerHTML = '<div class="loading">Carregando...</div>';
+            
+            try {
+                const resposta = await fetch('/retirados', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const cateteres = await resposta.json();
+                
+                if (cateteres.length === 0) {
+                    catetersContainer.innerHTML = '<div class="no-cateteres">Nenhum cateter retirado registrado.</div>';
+                    return;
+                }
+                
+                catetersContainer.innerHTML = '';
+                
+                cateteres.forEach(cateter => {
+                    const catetersCard = document.createElement('div');
+                    catetersCard.className = 'cateter-card';
+                    
+                    // Cabeçalho do card (clicável para expandir/colapsar)
+                    const header = document.createElement('div');
+                    header.className = 'cateter-header';
+                    header.innerHTML = `
+                        <div>
+                            <strong>${cateter.paciente || 'Paciente não informado'}</strong> - 
+                            ${cateter.hospital || 'Hospital não informado'} 
+                            (Leito: ${cateter.leito || 'N/A'})
+                        </div>
+                        <div>
+                            Retirado em: ${formatarData(cateter.dataRetirada) || 'Data não informada'}
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                    `;
+                    header.onclick = function() {
+                        const content = this.nextElementSibling;
+                        const icon = this.querySelector('.toggle-icon');
+                        if (content.style.display === 'block') {
+                            content.style.display = 'none';
+                            icon.textContent = '▼';
+                        } else {
+                            content.style.display = 'block';
+                            icon.textContent = '▲';
+                        }
+                    };
+                    
+                    // Conteúdo do card (inicialmente colapsado)
+                    const content = document.createElement('div');
+                    content.className = 'cateter-content';
+                    
+                    // Informações do cateter
+                    let infoHTML = '<div class="cateter-info">';
+                    
+                    // Primeira coluna de informações
+                    infoHTML += `
+                        <div>
+                            <div class="info-item">
+                                <div class="info-label">Paciente:</div>
+                                <div class="info-value">${cateter.paciente || '-'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Hospital:</div>
+                                <div class="info-value">${cateter.hospital || '-'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Leito:</div>
+                                <div class="info-value">${cateter.leito || '-'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Tipo de Cateter:</div>
+                                <div class="info-value">${cateter.tipo || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Segunda coluna de informações
+                    infoHTML += `
+                        <div>
+                            <div class="info-item">
+                                <div class="info-label">Residente:</div>
+                                <div class="info-value">${cateter.residente || '-'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Staff:</div>
+                                <div class="info-value">${cateter.staff || '-'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Cirurgia Realizada:</div>
+                                <div class="info-value">${cateter.cirurgia || '-'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Dose Inicial:</div>
+                                <div class="info-value">${cateter.doseInicial || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Terceira coluna de informações
+                    infoHTML += `
+                        <div>
+                            <div class="info-item">
+                                <div class="info-label">Data de Instalação:</div>
+                                <div class="info-value">${formatarData(cateter.dataInstalacao)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Data de Retirada:</div>
+                                <div class="info-value">${formatarData(cateter.dataRetirada)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Observações da Retirada:</div>
+                                <div class="info-value">${cateter.observacoesRetirada || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Fechar div de informações
+                    infoHTML += '</div>';
+                    
+                    // Se houver repiques, adicionar seção de repiques
+                    if (cateter.repiques && cateter.repiques.length > 0) {
+                        infoHTML += '<div class="repiques-section">';
+                        infoHTML += '<h3>Repiques</h3>';
+                        infoHTML += '<div class="repiques-list">';
+                        
+                        cateter.repiques.forEach(repique => {
+                            infoHTML += `
+                                <div class="repique-item">
+                                    <div><strong>Data:</strong> ${formatarData(repique.data)}</div>
+                                    <div><strong>EVA:</strong> ${repique.eva || '-'}</div>
+                                    <div><strong>Dose:</strong> ${repique.dose || '-'}</div>
+                                    <div><strong>Observações:</strong> ${repique.observacoes || '-'}</div>
+                                </div>
+                            `;
+                        });
+                        
+                        infoHTML += '</div></div>';
+                    }
+                    
+                    content.innerHTML = infoHTML;
+                    
+                    catetersCard.appendChild(header);
+                    catetersCard.appendChild(content);
+                    catetersContainer.appendChild(catetersCard);
+                });
+                
+            } catch (erro) {
+                console.error('Erro ao listar cateteres retirados:', erro);
+                document.getElementById('cateteres-container').innerHTML = 
+                    '<div class="no-cateteres">Erro ao carregar cateteres retirados.</div>';
+            }
+        }
+        
+        // Função para filtrar por hospital
+        function filtrarHospital() {
+            const hospital = document.getElementById('hospital-filter').value;
+            if (hospital) {
+                window.location.href = `/filtrar/${hospital}`;
+            } else {
+                window.location.href = '/visualizar/retirados';
+            }
+        }
+        
+        // Carrega os cateteres quando a página for carregada
+        window.onload = listarCateteres;
+    </script>
+</body>
+</html>
